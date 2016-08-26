@@ -1,0 +1,60 @@
+#!/bin/bash
+#SBATCH --partition=psingla
+#SBATCH --clusters=mae
+##SBATCH --partition=general-compute
+#SBATCH --time=70:00:00
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=1
+#SBATCH --tasks-per-node=12
+#SBATCH --mail-user=nagavenk@buffalo.edu
+#SBATCH --mail-type=END
+#SBATCH --job-name=ST2modf
+#SBATCH --output=ST2modf.out
+#SBATCH --error=ST2modf.err
+
+tic=`date +%s`
+echo "Start Time = "`date`
+
+cd $SLURM_SUBMIT_DIR
+echo "working directory = "$SLURM_SUBMIT_DIR
+module load matlab/R2013a
+module list
+ulimit -s unlimited
+
+# -------------------------------------------------
+# Make sure only one node is allocated since users
+# must use MDCS to run MatLab across multiple nodes.
+# --------------------------------------------------
+if [ "$SLURM_NNODES" -gt "1" ]; then
+  echo "Too many nodes were requested ($SLURM_NNODES)!"  
+  exit
+fi
+
+# count the number of processors
+np=`srun hostname -s | wc -l`
+
+# --------------------------------------------------
+# Make sure no more than 12 processors are allocated 
+# since that is the limit imposed by the current
+# version of MATLAB.
+# --------------------------------------------------
+if [ "$np" -gt "12" ]; then
+  echo "Too many processors were requested ($np)!"
+fi
+
+# MyMatlabScript for this example is located here:
+#   /util/matlab/example
+# It takes one argument --- the size of the matlabpool
+# which is matched to the number of processors allocated
+# to the job.
+matlab -nodisplay -r "satellite_radar_tasking_modf2(${np})"
+#
+
+echo "All Done!"
+
+echo "End Time = "`date`
+toc=`date +%s`
+
+elapsedTime=`expr $toc - $tic`
+echo "Elapsed Time = $elapsedTime seconds"
+

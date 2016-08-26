@@ -1,0 +1,11 @@
+function [a,e,i,omg,Omg,M]=equin2orbital(a,P1,P2,Q1,Q2,l)
+wb=atan2(P1,P2);
+Omg=atan2(Q1,Q2);
+omg=wb-Omg;
+e=sqrt(P1^2+P2^2);
+i=2*atan2(sqrt(Q1^2+Q2^2),1);
+optss=optimset('Display','off');
+K=fsolve(@(K)K+P1*cos(K)-P2*sin(K)-l,0,optss);
+E=K-wb;
+M=E-e*sin(E);
+a=a;

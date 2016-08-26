@@ -1,0 +1,18 @@
+Xmc=Data_TBP_at699mc(:,1:2);
+plot(Xmc(:,1),Xmc(:,2),'bo')
+P=cov(Xmc);
+mu=mean(Xmc,1)';
+sqP=sqrtm(inv(P));
+
+Ymc=zeros(size(Xmc));
+for i=1:1:length(Xmc)
+Ymc(i,:)=sqP*(Xmc(i,:)'-mu);
+end
+figure
+plot(Ymc(:,1),Ymc(:,2),'bo')
+
+bl=min(Xmc,[],1)-(1/10)*abs(min(Xmc,[],1)-mu');
+[Zmc,d]=transform_domain(Xmc,bl,bu,Bl,Bu)
+
+mean(Ymc,1)
+cov(Ymc)
