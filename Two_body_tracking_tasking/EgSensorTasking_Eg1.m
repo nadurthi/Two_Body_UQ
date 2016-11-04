@@ -1,4 +1,11 @@
-% Dreedy in time
+%% Description of this simulation
+
+% 1. Greedy in time
+% 2. Large number of objects
+% 3. Make everything parallel as possible
+
+
+
 clc
 clear
 close all
@@ -11,16 +18,21 @@ for simno=1:1000
 end
 simno=simno+1;
 
-load_known_sat_data=true;
+load_known_sat_data=false;
 saveonoff=1;
 saveonoffpic=0;
+
+n=10;
+aL=10000;
+aU=20000;
+
 %% time step setup
 tf=2*24*60*60; % 48 hours
 dt=2*60; % 5 mins time step
 t0=0;
 Tvec=t0:dt:tf;
 nt=length(Tvec);
-MeasFreq=1; % i.e. after every 100 time steps (or dt)
+MeasFreq=1; % number of time steps after which measruement update is done
 
 Re=6378.1;
 MU=398600.4418;
@@ -33,13 +45,8 @@ P0=blkdiag(0.1^2,0.1^2,0.1^2,1e-4^2,1e-4^2,1e-4^2);
 
 if load_known_sat_data==true
     load('SatTruth100')
-%     ps=3;
-%     Xsat0(ps:end,:)=[];
-%     ytruth(ps:end)=[];
-%     ytruth_orb(ps:end)=[];
-%     yplottruth(ps:end)=[];
 else
-    Xsat0=getInitialrv_3D(100);
+    Xsat0=getInitialrv_3D(n,aL,aU);
     
     Nsat=size(Xsat0,1);
     
@@ -99,8 +106,8 @@ Radmodel.h=@(x,Srad)radar_sens(x,Srad,Radmodel);
 Radmodel.R=@(Srad)reshape(MeasCov(Srad,:),Radmodel.hn,Radmodel.hn);
 Radmodel.G=@(x,Srad)radar_sens_penalty(x,Srad,Radmodel,100);
 
-
-plot_sat_radar_system2(yplottruth,Radmodel,{'Sathighlight',11})
+para.Sathighlight=1;
+plot_sat_radar_system2(yplottruth,Radmodel,para)
 xlabel('x')
 ylabel('y')
 zlabel('z')
@@ -121,9 +128,10 @@ if load_known_sat_data==false
         end
     end
     Satobserve
-    ndel=find(Satobserve<50)
+    ndel=find(Satobserve<50);
+    if length(ndel)>0
     keyboard
-    
+    end
 %     Xsat0(ndel,:)=[];
 %     ytruth(ndel)=[];
 %     yplottruth(ndel)=[];
