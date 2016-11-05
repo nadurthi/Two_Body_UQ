@@ -1,6 +1,6 @@
-function [XsigSat,Mu_t,P_t]=Propagation_Mu_Cov_satprob(Nsats,XsigSat,Radmodel,T0,Tk,Tvec,method,further)
+function SatState=Propagation_SatState(SatState,Radmodel,T0,Tk,Tvec,method,further)
 % Use T0 initial uncertainty to propogate upto toime Tk
-% also load it into Xsigsat
+% also load the intermediate means and covs to SatState
 
 global kappa
 kappa=1;
@@ -19,22 +19,21 @@ switch lower(method)
         error('smthg is wrong: DONT ask me what')
 end
 
-Nsatt=size(XsigSat,1);
+Nsats=lenght(SatState,1);
 
 Tsim=Tvec(T0:Tk);
 
-Mu_t=cell(Nsatt,1);
-P_t=cell(Nsatt,1);
+% Mu_t=cell(Nsatt,1);
+% P_t=cell(Nsatt,1);
 
 opt = odeset('reltol',1e-12,'abstol',1e-12);
 for Ns=Nsats
-    
     mu= XsigSat{Ns,1}(T0,:)';
     P=reshape(XsigSat{Ns,2}(T0,:),6,6);
     
     [X0,w]=qd_pts(mu,P);
     Xt=zeros(length(Tsim),6,length(w));
-%     keyboard
+% keyboard
     parfor ni=1:length(w)
         
         if length(Tsim)==2

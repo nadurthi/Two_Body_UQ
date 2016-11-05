@@ -99,7 +99,7 @@ Radmodel.RadPos=RadPos;
 Radmodel.Nrad=Nrad;
 Radmodel.hn=nsens_out;
 % Radmodel.Q=blkdiag(0.001^2,0.001^2,0.001^2,1e-6^2,1e-6^2,1e-6^2);
-
+Radmodel.Q=zeros(6,6);
 Radmodel.G=@(x,Srad)radar_sens_penalty(x,Srad,Radmodel,100);
 Radmodel.h=@(x,Srad)radar_sens(x,Srad,Radmodel);
 
@@ -168,11 +168,7 @@ for i=1:Nsat
     H(1,i)=log(det(P0));
     
     SatState{i}.Ymeas_t(1)=1;
-    SatState{i}.Q=P0;
-    SatState{i}.ytruth=ytruth{i};
 end
-
-clear ytruth;
 
 
 
@@ -187,7 +183,7 @@ for k=2:1:nt
     k
     
     
-    % Get measuremetn pairs over time from k to k+NTtask
+    %     Get measuremetn pairs over time from k to k+NTtask
     if rem(k-2,NTtask)==0
         disp(strcat('tasking at ',num2str(k)))
         tic
@@ -201,13 +197,11 @@ for k=2:1:nt
     
     
     % Propagation from k-1 to k
-    paras.ProcessNoise=true;
-    SatState=Propagation_SatState(SatState,k-1,k,Tvec,'ut',paras);
+    paras.
+    SatState=Propagation_SatState(SatState,Radmodel,k-1,k,Tvec,'ut',{'None'});
     
     % Measurement update only for the time step k
-    paras.TaskAll=false;
-    paras.pseudoupdate=false;
-    SatState=MeasUpdate_SatState(SatState,MeasPairs,Radmodel,k,Tvec,'ut',paras);
+    SatState=MeasUpdate_SatState(SatState,MeasPairs,Radmodel,k,Tvec,'ut',ytruth,{'None'});
     
     figure(4)
     Hut=plot_enttropy_sats_CUMULATE(SatState,k,'r',Tvec,{'plotit'});

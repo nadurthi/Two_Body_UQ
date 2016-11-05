@@ -1,4 +1,4 @@
-function MeasPairs=GetMeasPairs_satprob(MeasPairs,XsigSat,Radmodel,T0,Tk,Tvec,method,algo)
+function MeasPairs=GetMeasPairs_satprob(MeasPairs,SatState,Radmodel,T0,Tk,Tvec,method,algo)
 % tasking from T0 to Tk , including both T0 and Tk
 % Assuminig T0-1 is already updated and current time step
 
@@ -24,13 +24,14 @@ switch lower(method)
         error('smthg is wrong: DONT ask me what')
 end
 
-Nsat=Radmodel.Nsat;
+Nsat=len(SatState);
 Nrad=Radmodel.Nrad;
 Tsim=Tvec(T0:Tk);
 
 
 % update to T0 from T0-1
-[XsigSat,~,~]=Propagation_Mu_Cov_satprob(1:Nsat,XsigSat,Radmodel,T0-1,T0,Tvec,method,{'NoProcessNoise'});
+paras.ProcessNoise=true;
+SatState=Propagation_SatState(1:length(SatState),SatState,T0-1,T0,Tvec,method,paras);
 
 %% Greedy in time algorithm
 % ATTENTION:  only works for 1 constraint problems on the sensor i.e.
@@ -70,7 +71,7 @@ if max(strcmpi(algo,'GreedyTimeGreedySensors'))==1
                 
                 tempMeasPairs{T0+tt-1}=[Ns*ones(length(Nrads),1),Nrads(:)];
 
-                [~,~,Pk_t,~,Pku_t]=Meas_Update_satprob(Ns,XsigSat,tempMeasPairs,Radmodel,T0+tt-1,Tvec,method,[],{'pseudoupdate'});
+                [~,~,Pk_t,~,Pku_t]=MeasUpdate_SatState(Ns,XsigSat,tempMeasPairs,Radmodel,T0+tt-1,Tvec,method,[],{'pseudoupdate'});
 
                 %                 det(Pk_t{Ns})/det(Pku_t{Ns})
                 R=detratio(Pk_t{Ns},Pku_t{Ns});
