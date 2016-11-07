@@ -1,4 +1,4 @@
-function MeasPairs=GetMeasPairs_satprob(MeasPairs,SatState,Radmodel,T0,Tk,Tvec,method,algo)
+function MeasPairs=GetMeasPairs_satprob_GreedyTimeGreedySensors(MeasPairs,SatState,Radmodel,T0,Tk,Tvec,method)
 % tasking from T0 to Tk , including both T0 and Tk
 % Assuminig T0-1 is already updated and current time step
 
@@ -41,7 +41,7 @@ SatState=Propagation_SatState(1:length(SatState),SatState,T0-1,T0,Tvec,method,pa
 
 % Tasking starts from T0
 % first greedy in time, then greedy in sensors
-if max(strcmpi(algo,'GreedyTimeGreedySensors'))==1
+
     % greedy in time
     for tt=1:1:length(Tsim)
         
@@ -62,6 +62,7 @@ if max(strcmpi(algo,'GreedyTimeGreedySensors'))==1
                 else
                     k=find(MeasPairs{T0+tt-1}(:,1)==Ns); %[satellites,sensors/radars]
                 end
+                
                 if isempty(k)
                     Nrads=Nr;
                 else
@@ -70,9 +71,14 @@ if max(strcmpi(algo,'GreedyTimeGreedySensors'))==1
                 tempMeasPairs=MeasPairs;
                 
                 tempMeasPairs{T0+tt-1}=[Ns*ones(length(Nrads),1),Nrads(:)];
-
-                [~,~,Pk_t,~,Pku_t]=MeasUpdate_SatState(Ns,XsigSat,tempMeasPairs,Radmodel,T0+tt-1,Tvec,method,[],{'pseudoupdate'});
-
+                
+                    
+                Pk_t=reshape( SatState{Ns}.P(T0+tt-1,:),6,6);
+                
+                paras.TaskAll=false;
+                paras.pseudoupdate=false;
+                SatState_temp=MeasUpdate_SatState(Ns,XsigSat,tempMeasPairs,Radmodel,T0+tt-1,Tvec,method,[],paras);
+                Pku_t=reshape( SatState_temp{Ns}.P(T0+tt-1,:),6,6);
                 %                 det(Pk_t{Ns})/det(Pku_t{Ns})
                 R=detratio(Pk_t{Ns},Pku_t{Ns});
                 if R<1.01  %Pf/Pu
@@ -93,14 +99,17 @@ if max(strcmpi(algo,'GreedyTimeGreedySensors'))==1
         end
         
         % update the ones tasked and then propogate with onne time step using the measpairs sought
-        [XsigSat,~,~,~,~]=Meas_Update_satprob(1:Nsat,XsigSat,MeasPairs,Radmodel,T0+tt-1,Tvec,method,[],{'pseudoupdate'});
-        [XsigSat,~,~]=Propagation_Mu_Cov_satprob(1:Nsat,XsigSat,Radmodel,T0+tt-1,T0+tt,Tvec,method,{'NoProcessNoise'});
+        paras.TaskAll=false;
+        paras.pseudoupdate=false;
+        paras.ProcessNoise=true;
+        
+        SatState=Meas_Update_satprob(1:Nsat,SatState,MeasPairs,Radmodel,T0+tt-1,Tvec,method,[],paras);
+        SatState=Propagation_Mu_Cov_satprob(1:Nsat,SatState,Radmodel,T0+tt-1,T0+tt,Tvec,method,paras);
         
         
     end
     
     
-end
 
 end
 
@@ -151,6 +160,33 @@ else
         MI=0.5*log(det(Px)/det(Pk1));
     end
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 end
 
