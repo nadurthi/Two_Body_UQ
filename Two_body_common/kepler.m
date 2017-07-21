@@ -8,7 +8,7 @@
 
 
 
-function E = kepler(e,M);
+function E = kepler(e,M)
 
 
 
