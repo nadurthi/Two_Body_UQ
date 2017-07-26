@@ -1,4 +1,4 @@
-function plot_sat_radar_system2(Satellites,Radars,Constants)
+function plot_sat_radar_system2(Satellites,Radars,Constants,yplottruth)
 Re=6378.1;
 % figure
 hold on
@@ -6,9 +6,9 @@ hold on
 % if isempty(yplottruth)==0
 for i=1:1:Constants.Nsat
     
-    xx1=Satellites{i}.yplottruth(:,1);
-    xx2=Satellites{i}.yplottruth(:,2);
-    xx3=Satellites{i}.yplottruth(:,3);
+    xx1=yplottruth{i}(:,1);
+    xx2=yplottruth{i}(:,2);
+    xx3=yplottruth{i}(:,3);
     
     if Satellites{i}.HighlightPlotTraj==1
         plot3(xx1,xx2,xx3,'r:', 'linewidth',1.5);
