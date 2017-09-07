@@ -11,11 +11,11 @@ for i=1:1:Constants.Nsat
     xx3=yplottruth{i}(:,3);
     
     if Satellites{i}.HighlightPlotTraj==1
-        plot3(xx1,xx2,xx3,'r:', 'linewidth',1.5);
+        plot3(xx1,xx2,xx3,'r--', 'linewidth',0.5);
     else
-        plot3(xx1,xx2,xx3,'k:', 'linewidth',1.5)
+        plot3(xx1,xx2,xx3,'k--', 'linewidth',0.5)
     end
-    % plot3(xx1(1),xx2(1),xx3(1),'bo', 'linewidth',1.5)
+    plot3(xx1(5),xx2(5),xx3(5),'ro',  'linewidth',1,'MarkerSize',10,'MarkerFaceColor','r')
 end
 % end
 %% plot radar pos and their cones
